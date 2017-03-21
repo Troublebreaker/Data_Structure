@@ -1,0 +1,200 @@
+#include<iostream>
+#include<string>
+using namespace std;
+
+//实现对不同的类型都能进行高效正确的拷贝
+//模板
+
+struct __FalseType
+{
+    bool Get()
+    {
+        return false;
+    }
+};
+struct __TrueType
+{
+    bool Get()
+    {
+        return true;
+    }
+};
+template<typename T>
+struct TypeTraits
+{
+    typedef __FalseType __IsPODType;
+};
+
+
+//对内置类型进行特化
+template<>
+struct TypeTraits<bool>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+
+template<>
+struct TypeTraits<char>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<unsigned char>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<short>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<unsigned short>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<int>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<unsigned int>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<long>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<unsigned long>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<long long>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<unsigned long long>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<float>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<double>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<>
+struct TypeTraits<long double>
+{
+    typedef __TrueType __IsPODType;
+};
+
+
+template<class _Tp>
+struct TypeTraits<_Tp*>
+{
+    typedef __TrueType __IsPODType;
+};
+
+//使用参数推导的类型萃取
+
+template<class T>
+void Copy(const T*src,T*dst, size_t size, __FalseType)
+{
+    cout << "__FalseType:" << typeid(T).name() << endl;
+    for (size_t i = 0; i < size; ++i)
+    {
+        dst[i] = src[i];
+    }
+}
+
+template<typename T>
+void Copy(const T*src,  T*dst, size_t size, __TrueType)
+{
+    cout << "__TrueType:" << typeid(T).name() << endl;
+    memcpy(dst, src, sizeof(T)*size);
+
+}
+
+template<typename T>
+void Copy(const T*src, T*dst, size_t size)
+{
+    cout << typeid(T).name() << endl;
+    if (TypeTraits<T>::__IsPODType().Get())
+    {
+        Copy(src, dst, size,  TypeTraits<T>::__IsPODType());
+
+        //memcpy(dst, src, sizeof(T)*size);
+    }
+    else
+    {
+        /*for (size_t i = 0; i < size; ++i)
+        {
+            dst[i] = src[i];
+        }*/
+        Copy(src, dst, size, __FalseType());
+    }
+
+}
+
+
+void FunTest()
+{
+    string s1[10] = { "1", "2", "3", "44444444444" };
+    string s2[10] = { "111", "222", "333", "444" };
+
+    Copy(s1, s2, 10);
+    Copy(s1, s2, 10, TypeTraits<string>::__IsPODType());
+
+
+    int a1[10] = { 1, 2, 3 };
+    int a2[10] = { 0 };
+
+    Copy(a2, a1, 10, TypeTraits<int>::__IsPODType());
+
+    Copy(a2, a１, 10);
+
+
+}
+
+int main()
+{
+    FunTest();
+    return 0;
+}
