@@ -1,0 +1,96 @@
+//我们先写一个升序排列，一会再对它进行改造一下
+template<typename T>
+void BubbleSort(T*arr,size_t size)
+{
+    for (size_t i = 0; i < size - 1; ++i)//因为只需要排size-1个数，最后一个数自动排序
+    {
+        bool isChanged =false;
+        //有两种排法，一种是从前往后排，  另一种是从后往前排
+        //还有一点是：一种升序排，一种是降序排列
+        for (size_t j = 0; j < size - 1 - i; ++j)//注意：此处j<size-1-j,因为每次两个相邻的元素要进行比较
+        {
+            //先升序
+            if (arr[j]>arr[j + 1])
+            {
+                isChanged = true;
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+        if (isChanged == false)
+        {
+            break;
+        }
+    }
+}
+
+
+这次我们考虑满足升降序排列的问题 
+//用仿函数（又称函数类，是类，不过该类重载了（），使用起来像函数一样）来解决这个问题
+
+#include<iostream>
+using namespace std;
+
+//添加上升降序排功能
+//->仿函数:也叫函数类，重载了（），功能近似于函数
+
+template<class T>
+struct Less
+{
+    bool operator ()(const T&left, const T&right)
+    {
+        return left < right;
+    }
+};
+
+template<class T>
+struct Greate
+{
+    bool operator ()(const T&left, const T&right)
+    {
+        return left > right;
+    }
+};
+
+
+
+//注意多加了一个模板参数，顺利的解决了升降选择的问题
+template<typename T,typename compare=Less<T>>//写模板函数的时候也可加缺省类型
+void BubbleSort(T*arr, size_t size)
+{
+
+    for (size_t i = 0; i < size - 1; ++i)//因为只需要排size-1个数，最后一个数自动排序
+    {
+        bool isChanged = false;
+        //有两种排法，一种是从前往后排，  另一种是从后往前排
+        //还有一点是：一种升序排，一种是降序排列
+        for (size_t j = 0; j < size - 1 - i; ++j)//注意：此处j<size-1-j,因为每次两个相邻的元素要进行比较
+        {
+            //先升序
+            /*if (arr[j]>arr[j + 1])
+            {
+                isChanged = true;
+                swap(arr[j], arr[j + 1]);
+            }*/
+
+            if (compare()(arr[j],arr[j + 1]))
+            {
+                isChanged = true;
+                swap(arr[j], arr[j + 1]);
+            }
+
+        }
+        if (isChanged == false)
+        {
+            break;
+        }
+    }
+}
+int main()
+{
+    int arr[] = { 9, 5, 6, 3, 2, 4, 7, 1, 0, 8 };
+    BubbleSort<int>(arr, sizeof(arr) / sizeof(arr[0]));
+
+    BubbleSort<int,Less<int>>(arr, sizeof(arr) / sizeof(arr[0]));
+    BubbleSort<int, Greate<int>>(arr, sizeof(arr) / sizeof(arr[0]));//注意：模板调用时，类型的模板参数也需要加进来
+    return 0;
+}
