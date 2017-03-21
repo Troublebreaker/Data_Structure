@@ -1,0 +1,159 @@
+//完成迷宫
+#pragma warning (disable:4996)
+#include<iostream>
+#include<vector>
+#include<stack>
+using namespace std;
+#include<assert.h>
+
+
+//创建迷宫->动态创建二维数组：1.int[][N]  2.int*->（二维数组是按照一维数组来存储的）
+//打印迷宫
+//走迷宫
+
+const size_t N = 10;//定义全局变量N
+
+struct Pos
+{
+    int _row;
+    int _col;
+};
+
+//思考：三元组->适合适合什么问题？迷宫？二维数组？
+void InitMaze(int maze[][N])
+{
+    FILE*fout = fopen("MazeMap.txt", "r");
+    assert(fout);
+
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = 0; j < N;)
+        {
+            //获取文件中的字符用fgetc()
+
+            char ch = fgetc(fout);
+            if (ch == '0' || ch == '1')//因为在文件中保存，所有数字均为字符数字
+            {
+                maze[i][j] = ch-'0';
+                ++j;
+            }
+
+        }
+
+    }
+}
+
+
+void PrintMaze(int maze[][N])
+{
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = 0; j < N; ++j)
+        {
+
+            cout << maze[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+}
+
+
+bool CheckAccess(int maze[][N], Pos tmp)
+{
+    if (tmp._row >= 0 && tmp._row < N
+        &&tmp._col >= 0 && tmp._col < N
+        &&maze[tmp._row][tmp._col] == 0)
+    {
+        return true;
+    }
+
+    return false;
+
+}
+
+//获取迷宫路径
+void GetMazePath(int maze[][N], Pos entry)
+{
+
+    //回溯法->将路径压入栈
+    //试探法，对每个方向进行试探一下
+
+    stack<Pos>path;
+    path.push(entry);
+
+    while (!path.empty())
+    {
+        Pos cur = path.top();
+        Pos next = cur;
+
+        if (cur._row == N - 1)
+        {
+            break;
+        }
+
+        //试探法，对每个方向进行试探一下
+        //上方  
+        next._row--;
+        if (CheckAccess(maze,next))
+        {
+            maze[next._row][next._col] = 2;
+            path.push(next);
+            continue;
+        }
+
+        next = cur;
+        //右方
+        next._col++;
+        if (CheckAccess(maze, next))
+        {
+            maze[next._row][next._col] = 2;
+            path.push(next);
+            continue;
+        }
+
+        next = cur;
+
+        //下方  
+        next._row++;
+        if (CheckAccess(maze, next))
+        {
+            maze[next._row][next._col] = 2;
+            path.push(next);
+            continue;
+        }
+
+        next = cur;
+
+        //右方
+        next._col--;
+        if (CheckAccess(maze, next))
+        {
+            maze[next._row][next._col] = 2;
+            path.push(next);
+            continue;
+        }
+
+        //四个方向都走不通-》回溯法
+
+        maze[cur._row][cur._col] = 3;
+
+        path.pop();
+    }
+
+}
+
+
+int main()
+{
+    int maze[N][N];
+    InitMaze(maze);
+    PrintMaze(maze);
+
+    Pos entry = { 1.1 };
+    GetMazePath(maze, entry);
+    PrintMaze(maze);
+
+    return 0;
+}
