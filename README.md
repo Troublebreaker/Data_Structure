@@ -1,2 +1,1 @@
-# testsdjhkj
-学习使用github
+C++ 基础性练习
