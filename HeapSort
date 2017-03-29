@@ -1,0 +1,72 @@
+#include<iostream>
+#include<assert.h>
+using namespace std;
+
+//堆排序
+//最大堆
+
+
+void AdjustDown(int *a, size_t n,size_t parent)
+{
+	size_t child = parent * 2 + 1;
+
+	while (child < n)
+	{
+		if (child + 1 < n&&a[child + 1] > a[child])
+		{
+			child++;
+		}
+		if (a[child]>a[parent])
+		{
+			swap(a[child], a[parent]);
+			parent = child;
+			child = 2 * child + 1;
+
+		}
+		else
+		{
+			break;
+		}
+	}
+
+}
+
+void HeapSort(int *a, size_t n)
+{
+	assert(a);
+
+	//建大堆
+	int i = 0;
+	//从最后一个叶子节点开始调整，使得该子树满足最大堆特性
+	for (i = (n - 2) / 2; i >= 0; --i)
+	{
+		AdjustDown(a,n,i);
+
+	}
+
+	//堆排
+	int end = n - 1;
+	while (end>0)
+	{
+		swap(a[0], a[end]);
+		//AdjustDown(a, sizeof(a) / sizeof(a[0]), end);
+
+		AdjustDown(a, end, 0);
+		--end;
+
+	}
+
+}
+
+void Test()
+{
+	int arr[] = { 1, 5, 9, 3, 4, 7, 2, 6, 4, 0 };
+	HeapSort(arr, sizeof(arr) / sizeof(arr[0]));
+	int i = 0;
+}
+
+int main()
+{
+	Test();
+	return 0;
+}
