@@ -1,0 +1,269 @@
+
+struct _FalseType
+{
+	bool Get()
+	{
+		return false;
+	}
+
+};
+
+struct _TrueType
+{
+	bool Get()
+	{
+		return true;
+	}
+
+};
+template<typename T>
+struct TypeTraits
+{
+	typedef _FalseType _ISPODType;
+};
+
+
+//对于内置类型我们用特化  将_ISPODtype改为_TrueType
+template<>
+struct TypeTraits<char>
+{
+	typedef _TrueType _ISPODType;
+};
+
+template<>
+struct TypeTraits<short>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<int>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<unsigned char>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<unsigned short>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<unsigned int>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<long>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits< long long>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<unsigned long long>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<double>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<float>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<unsigned long>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+struct TypeTraits<bool>
+{
+	typedef _TrueType _ISPODType;
+};
+template<>
+
+//***这种类型容易遗忘
+struct TypeTraits< long double>
+{
+	typedef _TrueType _ISPODType;
+};
+
+
+
+//栈的实现
+template<typename T>
+class Stack
+{
+public:
+	Stack(size_t capacity=10)
+		:_capacity(capacity)
+		, _size(0)
+		, _data(NULL)
+	{
+		if (capacity != 0)
+		{
+			_data = new T[capacity];
+		}
+	}
+
+	//栈的基本操作
+	void Push(const T& data)
+	{
+	//判满
+		CheckCapacity();
+		_data[_size++] = data;
+	
+	}
+
+	T Pop()
+	{
+		if (IsEmpty())
+		{
+			abort();
+		}
+		_size--;
+		return _data[_size + 1];
+	}
+
+
+	//成对重载
+	T& Top()
+	{
+		if (IsEmpty())
+		{
+			abort();
+		}
+		return _data[_size - 1];	
+	}
+	const T& Top()const 
+	{
+		if (IsEmpty())
+		{
+			abort();
+		}
+		return _data[_size-1];
+	}
+
+
+	//判空
+	bool IsEmpty()const 
+	{
+		return 0 == _size;
+	}
+
+	~Stack()
+	{
+		delete []_data;
+		_data = NULL;
+
+	}
+
+private:
+	//检查容量
+	void CheckCapacity()
+	{
+		if (_size == _capacity)
+		{
+			T* temp = new T[_capacity*2+3];
+			
+			//拷贝时我们对于类型进行识别，打印
+			cout << typeid( T ).name() << endl;
+			//如果是内置了类型，使用memcpy进行拷贝，否则进行for循环进行萃取拷贝
+
+			if (TypeTraits<T>::_ISPODType().Get())
+			{
+				memcpy(temp,_data,_capacity*sizeof(T));
+			}
+			else
+			{
+				for (int i = 0; i < _capacity; ++i)
+				{
+					temp[i] = _data[i];
+				}
+			}
+
+			//释放原空间
+			delete []_data;
+			_data = NULL;
+			_data = temp;
+			_capacity = _capacity * 2 + 3;
+		}
+	
+	}
+
+private:
+	T* _data;
+	size_t _capacity;
+	size_t _size;
+};
+
+
+struct Node
+{
+	Node(int x=10)
+	:_x(x)
+	{
+	
+	}
+	
+	Node& operator=(const Node& n)
+	{
+		_x = n._x;
+		_y = n._y;
+		return *this;
+	}
+
+	~Node()
+	{
+		
+	}
+	int _x;
+	int _y;
+
+
+};
+
+
+void Test1()
+{
+
+	Stack<int> mystack(0);
+	mystack.Push(1);
+	mystack.Push(2);
+	mystack.Push(3);
+	mystack.Push(4);
+	mystack.Push(5);
+	cout << mystack.Top() << endl;
+	mystack.Pop();
+	mystack.Pop();
+	mystack.Pop();
+
+	Stack<Node> myNodestack(0);
+	myNodestack.Push(1);
+	myNodestack.Push(2);
+	myNodestack.Push(3);
+	myNodestack.Push(4);
+}
+
+
