@@ -1,0 +1,343 @@
+
+/***********************************************************************************/
+稀疏矩阵的压缩存储
+template<class T>
+class SparseMatrix
+{
+	template<class T>
+	struct Trituple
+	{
+		Trituple(size_t row, size_t col, const T& data)
+			: _row(row)
+			, _col(col)
+			, _data(data)
+		{}
+
+		Trituple()
+		{}
+
+		size_t _row;
+		size_t _col;
+		T _data;
+	};
+
+public:
+
+        // 稀疏矩阵的压缩存储
+	SparseMatrix(int* array, size_t row, size_t col, const T& invalid)
+		: _row(row)
+		, _col(col)
+		, _invalid(invalid)
+	{
+	}
+
+	SparseMatrix()
+	{}
+
+        // 访问稀疏矩阵中row行col中的元素
+	T& Access(int row, int col);
+
+        // 还原稀疏矩阵
+	template<class T>
+	friend ostream& operator<<(ostream& _cout, SparseMatrix<T>& s);
+
+	// 实现稀疏矩阵的逆置，并给出时间复杂度
+	SparseMatrix<T> Transprot();
+
+	// 实现稀疏矩阵的快速逆置，并给出时间复杂度
+	SparseMatrix<T> FastTransprot()
+
+        // 实现稀疏矩阵的加法操作
+	SparseMatrix<T> operator+(const SparseMatrix<T>& sp);
+
+private:
+	vector<Trituple<T>> _sm;
+	size_t _row;
+	size_t _col;
+	T _invalid;
+};
+
+/**********************************************************************************/
+
+
+
+
+
+
+#include<vector>
+
+#include<iostream>
+using namespace std;
+
+//稀疏矩阵的基本操作
+//值存储有效元素
+
+template<class T>
+class SparseMatrix
+{
+public:
+	//构造
+	SparseMatrix()
+	{}
+	SparseMatrix(int* array, size_t row, size_t col,const T & invalid)
+		:_row(row)
+		, _col(col)
+		, _invalid(invalid)
+	{
+	//读取有效数据
+		for (size_t i = 0; i < row; ++i)
+		{
+			for (size_t j = 0; j < col; ++j)
+			{
+				//存储有效元素
+				if (array[i*col + j] != invalid)
+				{
+					_sm.push_back(Trituple<T>(i, j, array[i*col + j]));
+
+				}
+			}
+		}
+	}
+
+	//转置 :行转化为列，列转化为行
+	SparseMatrix<T> Transport()
+	{
+		SparseMatrix<T> sm;
+		sm._row = _col;
+		sm._col = _row;
+		sm._invalid = _invalid;
+
+		//时间复杂度：O(M*N)
+		//注意：直接存储是有问题的。因为打印是按照行优先进行打印的，所以存储时应按照一行进行存储
+		for (int i = 0; i < _col; ++i)
+		{
+			vector<Trituple<T>>::iterator it = _sm.begin();
+			while (it != _sm.end())
+			{
+				if (i == it->_col)
+				{
+					sm._sm.push_back(Trituple<T> (it->_col,it->_row,it->_data));
+				}
+				it++;
+
+			}
+		}
+		return sm;
+
+	}
+
+
+	//访问
+	T& Access(size_t row,size_t col)
+	{
+		//遍历数组两种方法
+		//1.for循环
+		//2.迭代器
+		vector<Trituple<T>>::iterator it = _sm.begin();
+
+		while (it != _sm.end())
+		{
+			if (it->_row == row&&it->_col == col)
+			{
+				return it->_data;
+			}
+			it++;
+		}
+		return _invalid;
+	
+	}
+	
+	//输出  ->友元输出
+	template<class T>
+	friend ostream& operator <<(ostream& _cout, const SparseMatrix<T>& s)
+	{
+		//直接调用是访问函数效率比较低
+		//因为它是按照行优先进行存储的
+		int index = 0;
+		for (size_t i = 0; i < s._row; ++i)
+		{
+			for (size_t j = 0; j < s._col; ++j)
+			{
+				//注意遍历时，一定要注意越界问题
+				if (index<s._sm.size()&&i == s._sm[index]._row&&j == s._sm[index]._col)
+				{
+					_cout << s._sm[index++]._data << " ";
+				}
+				else
+				{
+					cout << s._invalid << " ";
+				}
+			}
+			_cout <<endl;
+		}
+		return _cout;
+	
+	}
+
+
+	//快速转置
+
+	//思想：用两个数组统计出，每一列元素的个数，同统计出转置时，
+	//先开辟好空间，根据该行列所在的偏移位置，直接定位到三元组元素的位置
+	SparseMatrix<T> FastTransport()
+	{
+		SparseMatrix<T> sm;
+		sm._row = _col;
+		sm._col = _row;
+		sm._sm.resize(_sm.size());
+
+		int * pRowCounts = new int[_col];//原矩阵每一列的元素个数
+		int * pRowStart = new int[_col];//每一行的元素的起始位置（原矩阵每一列的起始位置）
+		memset(pRowStart,0,sizeof(pRowStart[0])*_col);
+		memset(pRowCounts, 0, sizeof(pRowCounts[0])*_col);
+
+
+
+		for (size_t i = 0; i < _sm.size(); ++i)
+		{
+			pRowCounts[_sm[i]._col]++;
+		}
+
+
+		//每一行的元素的起始位置（原矩阵每一列的起始位置）
+
+		for (size_t i = 1; i < _col; ++i)
+		{ 
+			pRowStart[i] = pRowStart[i - 1] + pRowCounts[i-1];
+		}
+
+	
+		//第三步：从原_sm中的元素直接定位到到对应位置
+
+		for (size_t i = 0; i < _sm.size(); ++i)
+		{
+			int & addr = pRowStart[_sm[i]._col];
+			sm._sm[addr] = Trituple<T>(_sm[i]._col,_sm[i]._row,_sm[i]._data);
+			addr++;
+		}
+
+	
+		return sm;
+	}
+
+
+	//加法
+	//思想：将二位数组当成一维，然后对应的元素的位置进行比对，如果相同，进行相加
+	SparseMatrix<T> operator + (const SparseMatrix<T>& s)
+	{
+		SparseMatrix<T> sm;
+		sm._row = _row;
+		sm._col = _col;
+
+		if (s._col != _col || s._row != _row)
+		{
+			return sm;
+		}
+
+		int left = 0;
+		int right = 0;
+		int addr1 = 0; int addr2 = 0;
+
+		/*if (_sm[left]._row == s._sm[right]._row&&_sm[left]._col == s._sm[right]._col)
+		{
+			sm.push_back(Trituple<T>(_sm[left]._row,_sm[left]._col,_sm[left]._data+s._sm[right]._col));
+		}*/
+
+		while (left < _sm.size() && right < s._sm.size())
+		{
+
+			addr1 = _sm[left]._row*_col + _sm[left]._col;
+			addr2 = s._sm[right]._row*s._col + s._sm[right]._col;
+
+			if (addr1 == addr2)
+			{
+				sm._sm.push_back(Trituple<T>(_sm[left]._row, _sm[left]._col, _sm[left]._data + s._sm[right]._data));
+				++left;
+				++right;
+			}
+			else if (addr1 < addr2)
+			{
+				sm._sm.push_back(Trituple<T>(_sm[left]._row, _sm[left]._col, _sm[left]._data));
+				left++;
+			}
+			else
+			{
+				sm._sm.push_back(Trituple<T>(_sm[right]._row, _sm[right]._col, _sm[right]._data));
+				right++;
+			}
+		}
+	
+		while (left < _sm.size())
+		{
+			sm._sm.push_back(Trituple<T>(_sm[left]._row, _sm[left]._col, _sm[left]._data));
+			left++;
+		}
+		while (right < s._sm.size())
+		{
+			sm._sm.push_back(Trituple<T>(_sm[right]._row, _sm[right]._col, _sm[right]._data));
+			right++;
+		}
+		return sm;
+	}
+
+	template<class T>
+	struct Trituple
+	{
+		Trituple(size_t row, size_t col, size_t data)
+		:_row(row)
+		, _col(col)
+		, _data(data)
+		{
+		}
+		Trituple()
+		{}
+
+		size_t _row;
+		size_t _col;
+		T _data;
+	};
+
+private:
+	vector<Trituple<T>> _sm;//三元组数组
+	size_t _row;
+	size_t _col;
+	T _invalid;
+
+};
+
+
+void Test()
+{
+	int array[5][5] =
+	{ { 1, 0, 3, 0, 5 },
+	{ 0, 0, 0, 0, 0 },
+	{ 1, 0, 3, 0, 5 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 } };
+
+	SparseMatrix<int> sm((int*)array,sizeof(array)/sizeof(array[0]),sizeof(array[0])/sizeof(array[0][0]),0);
+
+	cout<<sm.Access(2, 2)<<endl;
+	cout << sm << endl;
+	cout << endl;
+	//转置
+	SparseMatrix<int> rsm1 = sm.Transport();
+	cout << rsm1 << endl << endl;
+
+	SparseMatrix<int> rsm2 = sm.FastTransport();
+	cout << rsm2 << endl;
+
+	//快速转置
+	//矩阵的加法
+	SparseMatrix<int> rsm3 = sm + rsm2;
+	cout << rsm3 << endl;
+
+
+}
+
+int main()
+{
+	Test();
+	return 0;
+
+}
