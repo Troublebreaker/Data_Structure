@@ -1,0 +1,116 @@
+
+```
+#include<iostream>
+using namespace std;
+
+//链表的基本操作
+struct ListNode
+{
+	int val;
+	ListNode* next;
+	ListNode(int x)
+		:val(x)
+		, next(NULL)
+	{}
+
+
+};
+
+//通过数组进行构建链表
+ListNode* CreatList(int * arr,int n)
+{
+	if (n == 0)
+	{
+		return NULL;
+	}
+	ListNode* head = new ListNode(arr[0]);
+	ListNode* cur=head;
+	for (int i = 1; i < n; ++i)
+	{
+		cur->next = new ListNode(arr[i]);
+		cur = cur->next;
+
+	}
+	return head;
+}
+
+//打印链表
+void PrintList(ListNode* head)
+{
+	while (head != NULL)
+	{
+		cout << head->val << "->";
+		head = head->next;
+	}
+	cout << "NULL";
+
+}
+
+
+//释放链链表空
+void DeleteList(ListNode** head)
+{
+	ListNode* cur = *head;
+	while (cur != NULL)
+	{
+		ListNode* deleteNode = cur;
+		cur = cur->next;
+		delete deleteNode;
+
+	}
+	*head = NULL;
+}
+
+
+//反转链表
+
+//思想：因为链表指向指向只有一个，所以进行改变时，会出现断裂，所以需要多用一个结点指针，
+//还需要知道当前结点指向的下一个节点，所以需要三个指针
+ListNode* ReverseList(ListNode* head)
+{
+	if (head == NULL)
+	{
+		return NULL;
+	}
+
+	ListNode* pre = NULL;
+	ListNode* cur = head;
+	ListNode* next = head->next;;
+
+	//while (cur!=NULL)
+	//{
+	//	cur->next = pre;
+	//	pre =cur;
+	//	cur = next;
+	//	next = cur->next;//next已经为NULL,非法解引用
+	//	//next = next->next;
+	//}
+
+	while (cur!=NULL)
+	{
+		ListNode*next = cur->next;//注意先让next走向下一个位置，这样
+		cur->next = pre;
+		pre = cur;
+		cur = next;
+
+	}
+	return pre;
+}
+
+
+int main()
+{
+	int arr[] = {1,2,3,4,5,6};
+
+	ListNode* head = CreatList(arr,6);
+	PrintList(head);
+	cout << endl;
+	ListNode* rHead = ReverseList(head);
+	PrintList(rHead);
+
+	DeleteList(&head);
+	PrintList(head);
+
+	return 0;
+}
+```
