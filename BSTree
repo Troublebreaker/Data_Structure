@@ -1,0 +1,402 @@
+#include<iostream>
+using namespace std;
+
+//二叉搜索树的实现
+template<class K,class V>
+struct BSTreeNode
+{
+	K _key;
+	V _value;
+
+	BSTreeNode(const K& key, const V &value)
+		:_key(key)
+		, _value(value)
+		, _left(NULL)
+		, _right(NULL)
+	{
+	}
+
+	BSTreeNode<K,V>* _left;
+	BSTreeNode<K, V>* _right;
+};
+
+//实现二叉搜索树
+template<typename K,typename V>
+class BSTree
+{
+public:
+	typedef BSTreeNode<K, V> Node;
+
+	//构建空树
+	BSTree()
+		:_root(NULL)
+	{}
+
+	//添加
+	//bool Insert(const K&key,const V &value)
+	//{
+	//	//保护类私有成员
+	//return 	_Insert(_root,key, value);
+	//
+	//}
+	bool Insert(const K&key,const V&value)
+	{
+		if (_root == NULL)
+		{
+			 _root = new Node(key,value);
+			return true;
+		}
+		Node* parent = NULL;
+		Node* cur = _root;
+
+		while (cur)
+		{
+			if (cur->_key < key)
+			{
+
+				parent = cur;
+				cur = cur->_right;
+			}
+			else if (cur->_key>key)
+			{
+				parent = cur;
+				cur = cur->_left;
+
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		if (parent ->_key >key)
+		{
+			parent->_left = new Node(key,value);
+			return true;
+		}
+		else if (parent->_key < key)
+		{
+			parent->_right = new Node(key,value);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	//删除
+	//分情况 左子树为空，右子树为空，左右子树均不为空
+	//递归和迭代两种做法
+	bool Remove(const K&key)
+	{
+		return _Remove(_root,key);
+	}
+
+	//递归实现删除
+	void RemoveR(const K& key)
+	{
+		_RemoveR(_root, key);
+
+	}
+
+	void InOrder()
+	{
+		_InOrder(_root);
+	}
+
+	//遍历树:根据二叉树性质，我们中序遍历会比较好
+	void _InOrder(Node* root)
+	{
+		if (root == NULL)
+		{
+			return;
+		}
+		_InOrder(root->_left);
+		cout << root->_value << " ";
+		_InOrder(root->_right);
+	}
+
+	//查找
+	//两种方法实现：1.递归实现2.循环实现
+	
+	Node* Find(const K& key)
+	{
+		return _Find(_root, key);
+	}
+
+	//析构
+	//两种实现：递归
+	~BSTree()
+	{
+		DeleteTree(_root);
+	}
+protected:
+
+	//插入一个结点
+	//思路：找到相应位置，然后进行插入
+	//递归实现
+	//_Insert(Node*& root,const K& key, const V &value)//注意：必须要给成引用，才能对外部的变量进行修改
+	//{
+	//	if (root == NULL)
+	//	{
+	//		root = new Node(key, value);
+	//		return true;
+	//	}
+	//	if (root->_key < key)
+	//	{
+	//		return _Insert(root->_right, key, value);
+	//	}
+	//	else if (root->_key>key)
+	//	{
+	//		return _Insert(root->_left,key,value);
+	//	}
+	//	else
+	//	{
+	//		return false;
+	//	}
+
+	//}
+	
+	//循环实现
+
+	
+	//递归法实现
+	//_Find(Node* root, const K&key)
+	//{
+	//	if (root==NULL)
+	//	{
+	//		return NULL;
+	//	}
+	//	if (root->key > key)
+	//	{
+	//		_Find(root->_left,key);
+	//	}
+	//	else if (root->key < key)
+	//	{
+	//		_Find(root->_right,key);
+	//	}
+	//	else
+	//	{
+	//		return root;
+	//	}
+	//}
+
+	Node* _Find(Node* root, const K& key)
+	{
+		Node* cur = root;
+
+		while (cur)
+		{
+			if (cur->_key < key)
+			{
+				cur = cur->_right;
+			}
+			else if (cur->_key > key)
+			{
+				cur = cur->_left;
+			}
+			else
+			{
+				return cur;
+			}
+		}
+		return NULL;
+	
+	}
+	void DeleteTree(Node*& root)
+	{
+		if (root == NULL)
+		{
+			return;
+		}
+		DeleteTree(root->_left);
+		DeleteTree(root->_right);
+
+		delete root;
+		root = NULL;
+	}
+
+
+	//循环实现
+	bool Remove(Node* root, const K& key)
+	{
+		if (root == NULL)
+		{
+			return false;
+		}
+
+		Node* cur = root;
+		Node* parnt = NULL;
+		while (cur)
+		{
+			if (cur->_key < key)
+			{
+				parent = cur;
+				cur = cur->_right;
+			}
+			else if (cur->_key>key)
+			{
+				parent = cur;
+				cur = cur->_right;
+
+			}
+			else
+			{
+				Node* del = NULL;
+				//删除节点：分三种情况：1.左子树为空2.右子树为空3.左右子树均不为空
+				if (cur->_left == NULL)
+				{
+					del = cur;
+					if (parent->_left == cur)
+					{
+						parent->_left = cur->_right;
+					}
+					else
+					{
+						parent->_right = cur->_right;
+					}
+				}
+				else if (cur->_right == NULL)
+				{
+					del = cur;
+					if (parent->_left == cur)
+					{
+						parent->_left = cur->_left;
+					}
+					else
+					{
+						parent->_right = cur->_left;
+					}
+				}
+				else//左右均不为空
+				{
+					//两种方法：1.找当前节点的右子树的最左节点
+					//2.找当前结点的左子树的最右结点
+
+					//替换法进行删除
+					Node* parent = cur;
+					Node* subRight = cur->_right;
+					while (subRight->_left)//有可能右子树只有一个结点，并没有进入到循环体内
+					{
+						parent = subRight;
+						subRight = subRight->_left;//最左节点
+
+					}
+
+					cur->_key = subRight->_key;//subRight此时为最左节点
+					del = subRight;
+
+					if (parent->left == subRight)
+					{
+						parent->_left = subRight->_right;
+					}
+					else
+					{
+						parent->_right = subRight->_right;
+					}
+
+					delete del;
+					del = NULL;
+					return true;
+				}
+
+			}
+		}
+		return flase;
+	
+	}
+
+	//递归实现
+	bool _RemoveR(Node*& root, const K& key)
+	{
+		if (root == NULL)
+		{
+			return false;
+		}
+
+		if (root->_key < key)
+		{
+			_RemoveR(root->_right, key);
+		}
+		if (root->_key > key)
+		{
+			_RemoveR(root->_left, key);
+		}
+		else
+		{
+			Node* del = NULL;
+
+			//删除结点
+
+		//判断三种情况
+			if (root->_left == NULL)
+			{
+				del = root;
+				root = root->_right;
+
+			}
+			else if (root->_right == NULL)
+			{
+				del = root;
+				root = root->_left;
+			}
+			else//左右结点均不为空
+			{
+				//找右子树的最左节点
+				Node* parent = subRight;
+				Node* subRight = root->_right;
+				while (subRight->_left)
+				{
+					parent = subRight;
+					subRight = subRight->_left;
+				}
+
+				root->_key = subRight->_key;
+				del = subRight;
+
+				if (parent->_right == subRight)///即没有进入循环
+				{
+					parent->_right = subRight->_right;
+				}
+				else
+				{
+					parent->_left = subRight->_right;
+				}
+
+			}
+			delete del;
+			del = NULL;
+		}
+	
+	
+	}
+
+private:
+	Node* _root;
+
+};
+
+void Test1()
+{
+	BSTree<int,int> t1;
+
+	t1.Insert(5,0);
+	t1.Insert(3, 0);
+	t1.Insert(4, 0);
+	t1.Insert(1, 0);
+
+	t1.Insert(6, 0);
+	BSTreeNode<int,int>*cur = t1.Find(1);
+	t1.InOrder();
+	cout << cur->_key << endl;
+	int i = 0;
+
+}
+
+int main()
+{
+	Test1();
+
+	return 0;
+}
