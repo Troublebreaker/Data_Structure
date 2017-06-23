@@ -1,0 +1,691 @@
+//熟常见排序方法
+//常怀敬畏之心
+
+//选择排序
+//插入排序
+//希尔排序
+//堆排
+//快速排序
+
+#include<iostream>
+#include<stack>
+using namespace std;
+
+
+//选择排序优化双端实现
+//实现思路：两个下标索引，一个找最小的元素，一个键找最大的元素
+//根据情况进行交换
+
+
+////普通版实现
+//void SelectSort(int arr[],int n)
+//{
+//	int minPos = 0;
+//	int maxPos = n - 1;
+//	int max = arr[0];
+//
+//
+//	////循环方式一
+//	//for (int i = n - 1; i > 0;i--)//控制循环次数
+//	//{
+//	//	for (int j = 0; j <=i; j++)
+//	//	{
+//	//		if (arr[maxPos] < arr[j])
+//	//		{
+//	//			maxPos = j;
+//	//		}
+//	//	}
+//	//	swap(arr[maxPos],arr[i]);
+//
+//	//}
+//
+//
+//
+//	//循环方式二
+//	for (int i = 1; i<n; i++)//控制循环次数
+//	{
+//		for (int j = 0; j <= n-i; j++)//每次比较的范围，根据当前循环的次数也可以确定范围
+//		{
+//			if (arr[maxPos] < arr[j])
+//			{
+//				maxPos = j;
+//			}
+//		}
+//		swap(arr[maxPos], arr[n-i]);
+//
+//	}
+//
+//}
+
+//优化版实现
+void SelectSort1(int arr[],int n)
+{
+	int minPos = 0;
+	int maxPos = n - 1;
+	//循环方式二
+	for (int i = 0; i<n/2; i++)//控制循环次数
+	{
+		maxPos = i;
+		minPos = i;
+		for (int j = i; j < n-i; j++)//每次比较的范围，根据当前循环的次数也可以确定范围
+		{
+			if (arr[maxPos] < arr[j])    
+			{
+				maxPos = j;
+			}
+
+			if (arr[minPos]>arr[j])
+			{
+				minPos = j;
+			}
+
+		}
+
+		//交换时注意
+		if (maxPos!=n-i-1)//上边是开区间，下边必须保持一致，否则第一次交换交换就会出现越界
+		swap(arr[maxPos], arr[n-i-1]);
+
+
+		//先交换最大的值，不能把最小位置的的值交换走
+		if (minPos == n - i)
+		{
+			minPos = maxPos;
+		}
+
+		if (minPos != i)
+			swap(arr[minPos], arr[i]);
+	}
+
+}
+
+
+//插入排序
+//思想：根插牌一样，先拿一张牌，然后后面的进行插入
+//优化：利用前面已经排序好的可以用二分查找直接定位
+
+//基础版实现
+//升序排列
+//void InsertSort(int *arr, int n)
+//{
+//	for (int i = 1; i < n; i++)
+//	{
+//		int j = i - 1;
+//		int temp = arr[i];
+//		while (j >= 0 &&arr[i]<arr[j])
+//		{
+//			//搬移元素
+//			arr[j + 1] = arr[j];
+//			j--;
+//		}
+//		arr[j + 1] = temp;
+//	}
+//}
+
+
+//插入排序优化版
+//思想：利用有序
+void InsertSort1(int *arr, int n)
+{
+	for (int i = 1; i < n; i++)
+	{
+		int j = i - 1;
+		int temp = arr[i];
+
+		//找比要插入的元素要小的位置
+		int left = 0;
+		int right = j;
+		//左闭右闭区间
+
+		while (left < right)
+		{
+			int mid = left + (right - left) / 2;
+			if (arr[mid] == temp)
+			{
+				left=mid++;
+				break;
+			}
+
+			if (arr[mid] < temp)
+			{
+				left = mid + 1;
+			}
+			else
+			{
+				right = mid - 1;
+			}
+
+		}
+
+		//搬移元素	
+		while (j >=left)
+		{
+			//搬移元素
+			arr[j + 1] = arr[j];
+			j--;
+		}
+
+		arr[left] = temp;
+
+
+	}
+}
+
+
+void Print(int arr[], int n)
+{
+	for (int i = 0; i < n; i++)
+	{
+		printf("%d ",arr[i]);
+	}
+	printf("\n");
+
+}
+
+void Test1()
+{
+	int arr[] = {6,2,9,0,1,7,8,3,4,5};
+
+	//SelectSort1(arr,sizeof(arr)/sizeof(arr[0]));
+
+	InsertSort1(arr, sizeof(arr) / sizeof(arr[0]));
+	int n = sizeof(arr) / sizeof(arr[0]);
+
+	//for (int i = 1; i < n; i++)
+	//{
+	//	int j = i - 1;
+	//	int temp = arr[i];
+	//	while (j >= 0 && temp<arr[j])//注意此处，第一次搬移后，i位置元素发生改变，用i作为下标进行判断访问错误
+	//	{
+	//		//搬移元素
+	//		arr[j + 1] = arr[j];
+	//		j--;
+	//	}
+	//	arr[j + 1] = temp;
+	//}
+
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+
+}
+
+void Test2()
+{
+	int arr[] = { 6, 2, 9, 0, 1, 7, 8, 3, 4, 5 };
+	int n = sizeof(arr) / sizeof(arr[0]);
+
+	for (int i = 1; i < n; i++)
+	{
+		int j = i - 1;
+		int temp = arr[i];
+
+		//找比要插入的元素要小的位置
+		int left = 0;
+		int right = j;
+		//左闭右闭区间
+
+		while (left <=right)
+		{
+			int mid = left + (right - left) / 2;
+			if (arr[mid] == temp)
+			{
+				left = mid++;
+				break;
+			}
+
+			if (arr[mid] < temp)
+			{
+				left = mid + 1;
+			}
+			else
+			{
+				right = mid - 1;
+			}
+
+		}
+
+		//搬移元素	
+		while (j >= left)
+		{
+			//搬移元素
+			arr[j + 1] = arr[j];
+			j--;
+		}
+
+		arr[left] = temp;
+
+
+	}
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+}
+
+//希尔排序实现
+//利用插入排序的优点，构造出具体场景进行实现
+
+//插入适合场景：1.数据量小2.接近有序
+//插入优化
+
+//如何构造出这种场景利用gap进行分组排序，降低gap到0进行排序
+void ShellSort(int arr[],int size)
+{
+	int gap = size;
+
+	//插入排序的优化，分组进行排序，缩减增量
+
+	while (gap >1)
+	{
+		gap = gap / 3 + 1;
+		for (int i = gap; i < size; i++)
+		{
+			int temp = arr[i];
+			int j = i - gap;
+
+			while (j >= 0 && arr[i] < arr[j])
+			{
+				arr[j + gap] = arr[j];
+				j -= gap;
+			}
+			arr[j + gap] = temp;
+
+		}
+	}
+
+}
+
+void Test3()
+{
+	int arr[] = { 6, 2, 9, 0, 1, 7, 8, 3, 4, 5 };
+
+	//ShellSort(arr,sizeof(arr)/sizeof(arr[0]));
+
+	//InsertSort1(arr, sizeof(arr) / sizeof(arr[0]));
+	int size = sizeof(arr) / sizeof(arr[0]);
+
+	int gap = size;
+
+	//插入排序的优化，分组进行排序，缩减增量
+
+	while (gap >1)
+	{
+		gap = gap / 3 + 1;
+		for (int i = gap; i < size; i++)
+		{
+			int temp = arr[i];
+			int j = i - gap;
+
+			while (j >= 0 && temp < arr[j])
+			{
+				arr[j + gap] = arr[j];
+				j -= gap;
+			}
+			arr[j + gap] = temp;
+
+		}
+	}
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+
+}
+void heapDownAdjust(int * arr, int parent, int size)
+{
+	int left = 2 * parent + 1;//默认最大的孩子
+	while (left < size)
+	{
+		if (left + 1 < size&&arr[left] < arr[left + 1])
+		{
+			left += 1;
+		}
+
+		if (arr[parent] < arr[left])
+		{
+			swap(arr[parent], arr[left]);
+		}
+		else
+		{
+			break;
+		}
+		parent = left;
+		left = 2 * parent + 1;
+
+	}
+}
+
+void heapSort(int * arr, int size)
+{
+	//1.建大堆（向下调整）
+	for (int i = (size - 2) / 2; i >= 0; i--)
+	{
+		heapDownAdjust(arr, i, size);
+	}
+
+	//2.替换最后一个元素
+	while (size > 1)
+	{
+		swap(arr[0], arr[size - 1]);
+		heapDownAdjust(arr, 0, size - 1);
+		//3.更新根到最后一个元素路径上的值，调整堆
+		size--;
+	}
+
+}
+void TestHeapSort()
+{
+	int arr[] = { 6, 2, 9, 0, 1, 7, 8, 3, 4, 5 };
+	heapSort(arr, sizeof(arr) / sizeof(arr[0]));
+	int size = sizeof(arr) / sizeof(arr[0]);
+	int gap = size;
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+
+}
+
+
+
+
+//快速排序实现
+//实现原理：找出一个基准值，把数组划分为两个区间（左边均小于基准值，右边均大于基准值），直接可以定为出基准值排序后应该对应的位置
+//并且将区间划分为个两个区间，缩小了数据范围，下次找基准值位置时，查找范围相比较上一次缩小了一半
+//时间复杂度：O(Nlog N)  不稳定
+
+//多种划分方法
+//方法一：左右指针法
+int partion(int * arr,int left ,int right)
+{
+	//取右边元素为基准值
+	int temp = arr[right - 1];//左闭右开区间
+	right = right - 1;
+	
+	while (left < right)
+	{
+		while (left < right&&arr[left] < temp)
+		{
+			left++;
+		}
+		while (right>left&&arr[right] > temp)
+		{
+			right--;
+		}
+
+		//交换两个元素
+		swap(arr[left],arr[right]);
+	}
+	return left;
+
+}
+
+//滑动窗口法
+//思想:刚开始两个同时走，遇到关键点后分开走
+int partion2(int * arr, int left, int right)
+{
+	//取右边元素为基准值
+	int key = arr[right - 1];//左闭右开区间
+	int end = right - 1;
+	int prev, cur;
+	prev =left-1;
+	cur = left;
+	//while (cur < right)
+	//{
+	//	while (cur < right&&(prev+1==cur)&&(arr[cur] <=key))
+	//	{
+	//		cur++;
+	//		prev++;
+	//	}
+	//	//找到了关键点:第一个大于关键点的地方
+	//	while (cur<right&&arr[cur] >=key)
+	//	{
+	//		cur++;
+	//	}
+
+	//	//交换两个元素
+	//	swap(arr[prev+1], arr[cur]);
+
+	//	while (prev < cur&&arr[prev] < key)prev++;
+
+	//}
+
+
+	//while (cur < end)
+	//{
+	//	if (arr[cur]<key&&++prev != cur)
+	//	{
+	//		std::swap(arr[cur], arr[prev]);
+	//	}
+	//	cur++;
+	//}
+	//std::swap(arr[++prev], arr[end]);
+
+
+	while (cur < end)
+	{
+		if (arr[cur] < key&&++prev != cur)
+		{
+			swap(arr[cur],arr[prev]);
+		}
+		cur++;
+	}
+	swap(arr[++prev],arr[end]);
+	return prev;
+
+}
+
+//实现三：挖坑法（空出一个空位置，从左右找元素填充）
+int partion3(int * arr, int left, int right)
+{
+	int key = arr[right - 1];//左闭右开区间
+	int pos = right - 1;
+	right -= 1;
+	while (left <right)
+	{
+		while (left < right&&arr[left] <=key)
+		{
+			left++;
+		}
+
+		//填坑
+		if (left<right)
+		arr[pos] = arr[left];
+		pos = left;
+
+		while (left < right&&arr[right] >=key)
+		{
+			right--;
+		}
+
+		//填坑
+		if (left<right)
+		arr[pos] = arr[right];
+		pos = right;
+	
+	}
+	arr[left] = key;
+
+	return left;
+
+}
+
+int partion1(int * arr, int left, int right)
+{
+	int key = arr[right - 1];//左闭右开区间
+	int begin = 0;
+	int end = right - 1;
+
+	while (begin<end)
+	{
+		while (begin < end&&arr[begin] <= arr[end])
+		{
+			begin++;
+		}
+
+		if (begin < end)
+		{
+			arr[end]=arr[begin];//end--下次end进行寻找时，从下一个位置开始
+		}
+		while (begin < end&&arr[end] >= arr[begin])
+		{
+			end--;
+		}
+
+		if (begin < end)
+		{
+			arr[begin] = arr[end];
+		}
+
+	}
+	arr[begin] = key;
+
+
+	return begin;
+
+}
+
+void quickSort(int* arr,int left,int right)
+{
+	if (left <right)
+	{
+		int div = partion2(arr, left, right);//返回划分区间的临界下标
+		quickSort(arr , left, div);//排序左半部分
+		quickSort(arr, div + 1, right);//排序右半部分
+	}
+
+}
+
+//非递归快排实现
+//利用栈保存每次递归所需要的数据，按照一定的顺进行访问来进行实现
+
+
+void QuickSort(int * arr ,int left ,int right)
+{
+	stack<int> s;
+	s.push(left);
+	s.push(right);
+
+	while (!s.empty())
+	{
+		right = s.top();
+		s.pop();
+
+		left = s.top();
+		s.pop();
+
+		if (left < right)
+		{
+			int div = partion2(arr, left, right);//返回划分区间的临界下标
+
+			//划分两个区间进行入栈
+
+			s.push(div + 1);
+			s.push(right);
+
+			s.push(left);
+			s.push(div);
+		}
+
+
+	}
+
+
+}
+
+
+void TestQuickSort()
+{
+	int arr[] = { 6, 2, 9, 0, 1, 7, 8, 3, 4, 5 };
+	//quickSort(arr,0, sizeof(arr) / sizeof(arr[0]));
+	//int size = sizeof(arr) / sizeof(arr[0]);
+	//int gap = size;
+
+	QuickSort(arr, 0, sizeof(arr) / sizeof(arr[0]));
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+
+}
+
+
+
+//归并排序实现
+//思想：  划分+ 合并
+//启发：合并两个有序的链表，  合并数组
+
+//1.划分  （递归划分）
+//2.合并   （由合并链表思想）
+
+template<class K>
+void Merge(K * arr, int left1, int right1, int left2, int right2, K* temp)
+{
+	//合并两个空间
+	int index = left1;
+
+	while (left1 <= right1&&left2 <= right2)
+	{
+		if (arr[left1] < arr[left2])
+		{
+			temp[index++] = arr[left1++];
+		}
+		else
+		{
+			temp[index++] = arr[left2++];
+		}
+	}
+
+	while (left1 <= right1)
+	{
+		temp[index++] = arr[left1++];
+	}
+	while (left2 <= right2)
+	{
+		temp[index++] = arr[left2++];
+	}
+
+}
+
+
+template<class K>
+void _MergeSort(K * arr, int left, int right, K* temp)
+{
+
+	if (left < right)
+	{
+
+		//1.划分  （递归划分）
+
+		//取中间元素
+		int mid = left + ((right - left) >> 1);
+
+		_MergeSort(arr, left, mid, temp);
+		_MergeSort(arr, mid + 1, right, temp);
+
+		Merge(arr, left, mid, mid + 1, right, temp);
+
+		//2.合并   （由合并链表思想）
+
+		memcpy(arr+left,temp+left,sizeof(arr[0])*(right-left+1));
+
+	}
+
+}
+
+template<class K>
+void MergeSort(K* arr,int size)
+{
+	K* temp = new K[size];
+
+	_MergeSort(arr,0,size-1,temp);
+
+	delete temp;
+}
+
+
+
+void TestMergeSort()
+{
+	int arr[] = { 6, 2, 9, 0, 1, 7, 8, 3, 4, 5 };
+	//quickSort(arr,0, sizeof(arr) / sizeof(arr[0]));
+	//int size = sizeof(arr) / sizeof(arr[0]);
+	//int gap = size;
+
+	MergeSort(arr,sizeof(arr) / sizeof(arr[0]));
+	Print(arr, sizeof(arr) / sizeof(arr[0]));
+
+}
+
+
+int main()
+{
+	TestMergeSort();
+	return 0;
+}
